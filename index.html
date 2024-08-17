@@ -144,7 +144,6 @@
 
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -169,8 +168,9 @@
   const canvas = document.getElementById("canvas");
   const context = canvas.getContext("2d");
   const points = [];
-  const numPoints = 50;
+  const numPoints = 30;
   const maxSpeed = 0.5 / 3;
+  let redPointIndex = Math.floor(Math.random() * numPoints); // 随机选择一个节点变为红色
 
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -179,7 +179,7 @@
     for (let i = 0; i < numPoints; i++) {
       const x = Math.random() * canvas.width;
       const y = Math.random() * canvas.height;
-      const z = Math.random() * 100; // Add a z-coordinate for 3D effect
+      const z = Math.random() * 100; // 添加z坐标以实现3D效果
       const vx = (Math.random() - 0.5) * maxSpeed;
       const vy = (Math.random() - 0.5) * maxSpeed;
       points.push({ x, y, z, vx, vy });
@@ -192,18 +192,37 @@
     for (let i = 0; i < points.length; i++) {
       const point = points[i];
       context.beginPath();
-      const scale = 1 + point.z / 100; // Scale by z-coordinate for 3D effect
-      context.arc(point.x, point.y, 2 * scale, 0, Math.PI * 2);
-      context.fillStyle = `rgba(18, 18, 18, ${1 - point.z / 200})`; // Fade color with z-coordinate
+      const scale = 1 + point.z / 100; // 根据z坐标缩放以实现3D效果
+      const radius = 2 * scale; // 所有节点大小一致
+      context.arc(point.x, point.y, radius, 0, Math.PI * 2);
+
+      // 设置节点颜色：红色节点为红色，其他节点为默认颜色
+      if (i === redPointIndex) {
+        context.fillStyle = 'rgba(255, 0, 0, 1)'; // 红色节点
+      } else {
+        context.fillStyle = `rgba(18, 18, 18, ${1 - point.z / 200})`; // 其他节点的颜色
+      }
+
       context.fill();
 
+      // 绘制连线并添加红色节点辐射渐变效果
       for (let j = i + 1; j < points.length; j++) {
         const start = points[i];
         const end = points[j];
         context.beginPath();
         context.moveTo(start.x, start.y);
         context.lineTo(end.x, end.y);
-        context.strokeStyle = `rgba(18, 18, 18, ${1 - (start.z + end.z) / 400})`; // Fade color with average z-coordinate
+
+        // 创建渐变效果，红色节点辐射渐变
+        if (i === redPointIndex || j === redPointIndex) {
+          const gradient = context.createLinearGradient(start.x, start.y, end.x, end.y);
+          gradient.addColorStop(0, 'rgba(255, 0, 0, 1)');
+          gradient.addColorStop(1, `rgba(18, 18, 18, ${1 - (start.z + end.z) / 400})`);
+          context.strokeStyle = gradient;
+        } else {
+          context.strokeStyle = `rgba(18, 18, 18, ${1 - (start.z + end.z) / 400})`; // 普通连线颜色
+        }
+
         context.lineWidth = 0.5;
         context.stroke();
       }
@@ -228,6 +247,9 @@
 </script>
 </body>
 </html>
+
+
+
   </div>
 </div>
 
